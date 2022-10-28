@@ -1,4 +1,4 @@
-import { Directus } from "@directus/sdk";
+import {Directus} from "@directus/sdk";
 
 export const directus = new Directus("https://fge7lqjv.directus.app", {
     auth: {
@@ -8,7 +8,7 @@ export const directus = new Directus("https://fge7lqjv.directus.app", {
 
 export const authService = {
     async login(email: string, password: string) {
-        return await directus.auth.login({ email, password });
+        return await directus.auth.login({email, password});
     },
     async register(firstName: string, email: string, password: string): Promise<boolean> {
         const createUserResult = await directus.users.createOne({

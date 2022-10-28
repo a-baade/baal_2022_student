@@ -2,12 +2,16 @@
 
 const userAccessToken = localStorage.getItem('auth_token');
 
-defineProps(["imageId"]);
+interface Props {
+  imageId: string;
+}
+
+defineProps<Props>();
 
 </script>
 
 <template>
- <img :src="`https://fge7lqjv.directus.app/assets/${imageId}?access_token=${userAccessToken}`" />
+  <img :src="`https://fge7lqjv.directus.app/assets/${imageId}?access_token=${userAccessToken}`"/>
 </template>
 
 <style scoped>

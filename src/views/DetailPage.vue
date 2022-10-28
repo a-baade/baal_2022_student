@@ -25,17 +25,17 @@ import {
   IonToolbar,
   onIonViewDidEnter, toastController
 } from "@ionic/vue";
-import { ref } from 'vue';
-import { chatboxOutline } from 'ionicons/icons';
-import { useRoute } from 'vue-router';
+import {ref} from 'vue';
+import {chatboxOutline} from 'ionicons/icons';
+import {useRoute} from 'vue-router';
 import {directus} from "@/services/directus.service";
 import CampingSpotImage from "@/components/CampingSpotImage.vue";
-
+import {ICampSpot, ICampSpotResponse} from "@/models/CampSpotModels";
 /* Using the route object, we can get data for the user's current route */
 const route = useRoute();
 
 /* Retrieve the id parameter from the current route's query string (/detail/:id) */
-const { id } = route.params;
+const {id} = route.params;
 const userAccessToken = localStorage.getItem('auth_token');
 
 /* State */
@@ -46,49 +46,60 @@ const isUploadingComment = ref(false);
 
 
 /* "Dummy data" for displaying in the UI until we connect the app to an API */
-const campingSpot = ref(null);
+const campingSpot = ref<ICampSpot | null>(null);
+const comments = ref<ICampSpot | [] >([])
+
 
 onIonViewDidEnter(() => {
   fetchCampingSpot();
 })
 
-const newComment = ref({
-  user_created: "",
-  date_created: "",
-  description: [
-      ""
-  ],
-});
-
 const fetchCampingSpot = async () => {
-  const response = await directus.graphql.items(`
+  const response = await directus.graphql.items<ICampSpotResponse>(`
     query {
       camp_spots_by_id(id: ${id}) {
-        id,
-        title,
-        description,
+            title,
+    description,
         hashtags,
         image {
           id
         },
         user_created {
           first_name
-        }
+        },
+        comments {
+          id,
+          user_created {
+            id
+          }
+          description,
+          date_created
+        },
       }
     }
   `);
+  const responseData = response.data as ICampSpotResponse
 
-  if (response.status === 200 && response.data) {
-    campingSpot.value = response.data.camp_spots_by_id;
+  if (response.status === 200 && responseData) {
+    campingSpot.value = responseData.camp_spots_by_id;
     isLoadingCampSpot.value = false;
   }
 }
 
 const addNewComment = async () => {
   if (newCommentText.value) {
-      newComment.value.description.push(newCommentText.value);
+    try {
+      await directus.items("comments").createOne({
+        comments_fk: id,
+        description: newCommentText.value,
+      })
+    } catch (e) {
+      console.error(e)
+    }
   }
+  isModalOpen.value = false
   newCommentText.value = ""; // reset
+  await fetchCampingSpot();
 };
 
 </script>
@@ -100,10 +111,10 @@ const addNewComment = async () => {
         <ion-buttons slot="start">
           <ion-back-button default-href="/"></ion-back-button>
         </ion-buttons>
-        <ion-title v-if = "isLoadingCampSpot">
+        <ion-title v-if="isLoadingCampSpot">
           <ion-spinner></ion-spinner>
         </ion-title>
-        <ion-title v-if="campingSpot">{{campingSpot.title}} ({{id}})</ion-title>
+        <ion-title v-if="campingSpot">{{ campingSpot.title }} ({{ id }})</ion-title>
         <ion-buttons slot="end">
           <ion-button @click="isModalOpen = true">
             <ion-icon :icon="chatboxOutline"></ion-icon>
@@ -115,9 +126,9 @@ const addNewComment = async () => {
     <ion-content :fullscreen="true" v-if="campingSpot && !isLoadingCampSpot">
 
       <!-- Hero image section -->
-      <camping-spot-image :image-id="campingSpot.image.id" />
+      <camping-spot-image :image-id="campingSpot.image.id"/>
       <!-- Hashtag section -->
-      <ion-chip v-for="hashtag in campingSpot.hashtags" :key="hashtag" color="tertiary">#{{hashtag}}</ion-chip>
+      <ion-chip v-for="hashtag in campingSpot.hashtags" :key="hashtag" color="tertiary">#{{ hashtag }}</ion-chip>
 
       <!-- Camping spot info section -->
       <ion-card>
@@ -125,7 +136,7 @@ const addNewComment = async () => {
           <ion-card-subtitle>Turbeskrivelse</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
-          {{campingSpot.description}}
+          {{ campingSpot.description }}
         </ion-card-content>
       </ion-card>
 
@@ -144,10 +155,10 @@ const addNewComment = async () => {
             </ion-avatar>
             <ion-label class="ion-text-wrap">
               <ion-text>
-                <b>{{comment.username}} </b>
+                <b>{{ comment.first_name }} </b>
               </ion-text>
               <ion-text>
-                <p>{{comment.text}}</p>
+                <p>{{ comment.description }}</p>
               </ion-text>
             </ion-label>
           </ion-item>

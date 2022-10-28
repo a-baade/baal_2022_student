@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { authService } from '@/services/directus.service';
-import { IonButton, IonContent, IonInput, IonItem, IonLabel, IonList, IonListHeader, IonPage, IonToggle,toastController } from '@ionic/vue';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import {authService} from '@/services/directus.service';
+import {
+  IonButton,
+  IonContent,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonListHeader,
+  IonPage,
+  IonToggle,
+  toastController
+} from '@ionic/vue';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 
 const router = useRouter();
 
@@ -28,7 +39,8 @@ const login = async () => {
       message: `${error}`,
       duration: 3000,
       color: "warning"
-    })).present();  }
+    })).present();
+  }
 }
 
 const register = async () => {
@@ -50,14 +62,14 @@ const register = async () => {
           <ion-label>Baal</ion-label>
         </ion-list-header>
 
-        <img class="hero-image" src="/assets/camera.png" />
+        <img class="hero-image" src="/assets/camera.png"/>
 
         <ion-item lines="none">
           <ion-label class="label-mild">Ny bruker?</ion-label>
           <ion-toggle color="dark" @ion-change="inRegisterMode = !inRegisterMode"></ion-toggle>
         </ion-item>
 
-        <hr />
+        <hr/>
 
 
         <ion-item v-if="inRegisterMode">
@@ -75,7 +87,8 @@ const register = async () => {
           <ion-input type="password" v-model="userDetails.password"></ion-input>
         </ion-item>
 
-        <ion-button v-if="inRegisterMode" @click="register" class="button-auth" fill="solid" color="dark" size="default">
+        <ion-button v-if="inRegisterMode" @click="register" class="button-auth" fill="solid" color="dark"
+                    size="default">
           Registrer deg 🏕
         </ion-button>
 
